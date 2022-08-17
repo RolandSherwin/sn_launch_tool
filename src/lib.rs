@@ -145,6 +145,10 @@ impl Launch {
         );
         fs::create_dir_all(&client_network_contacts_dir)?;
         fs::copy(
+            &genesis_contacts_filepath,
+            client_network_contacts_dir.join("testnet_network_contacts"),
+        )?;
+        fs::copy(
             genesis_contacts_filepath,
             client_network_contacts_dir.join("default"),
         )?;
