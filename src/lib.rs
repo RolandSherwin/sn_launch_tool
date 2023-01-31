@@ -108,7 +108,7 @@ impl Launch {
         let interval = Duration::from_millis(self.interval);
 
         if !self.add_nodes_to_existing_network {
-            self.run_genesis(&node_cmd)?;
+            self.run_genesis(node_cmd.clone())?;
             thread::sleep(interval);
 
             debug!("Genesis wait over...");
@@ -128,7 +128,7 @@ impl Launch {
             info!("Launching nodes {:?}", node_ids);
 
             for i in node_ids {
-                self.run_node(&node_cmd, i)?;
+                self.run_node(node_cmd.clone(), i)?;
                 thread::sleep(interval);
             }
         }
@@ -153,19 +153,19 @@ impl Launch {
         Ok(())
     }
 
-    fn run_genesis(&self, node_cmd: &NodeCmd) -> Result<()> {
+    fn run_genesis(&self, mut node_cmd: NodeCmd) -> Result<()> {
         // Set genesis node's command arguments
-        let mut genesis_cmd = node_cmd.clone();
-        genesis_cmd.push_arg("--first");
+        node_cmd.push_env("OTLP_SERVICE_NAME", "roland-node-1");
 
         // Let's launch genesis node now
         debug!("Launching genesis node (#1)...");
-        genesis_cmd.run("sn-node-genesis", &self.nodes_dir)?;
+        node_cmd.run("sn-node-genesis", &self.nodes_dir)?;
 
         Ok(())
     }
 
-    fn run_node(&self, node_cmd: &NodeCmd, node_idx: usize) -> Result<()> {
+    fn run_node(&self, mut node_cmd: NodeCmd, node_idx: usize) -> Result<()> {
+        node_cmd.push_env("OTLP_SERVICE_NAME", format!("roland-node-{node_idx}"));
         if self.add_nodes_to_existing_network {
             debug!("Adding node #{}...", node_idx)
         } else {
